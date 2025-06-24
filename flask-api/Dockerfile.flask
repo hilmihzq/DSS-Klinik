@@ -1,0 +1,22 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Salin requirements dan install dependensi
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Salin semua file app dan skrip tunggu MySQL
+COPY . .
+
+# Pastikan wait-for-mysql.sh bisa dieksekusi
+COPY wait-for-mysql.sh /wait-for-mysql.sh
+RUN chmod +x /wait-for-mysql.sh
+
+# Buka port Flask
+EXPOSE 5000
+
+# Jalankan script tunggu dan kemudian app.py
+ENTRYPOINT ["/wait-for-mysql.sh"]
+CMD ["python", "app.py"]
+

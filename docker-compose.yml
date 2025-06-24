@@ -1,0 +1,29 @@
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: 192.168.100.159       # ✅ IP address dari Windows host kamu
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: spk_klinik
+    depends_on:
+      - flask
+
+  flask:
+    build:
+      context: ./flask-api
+      dockerfile: Dockerfile.flask
+    container_name: flask-api
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: 192.168.100.159       # ✅ Ganti ini juga
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: spk_klinik
+
