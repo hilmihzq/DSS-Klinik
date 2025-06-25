@@ -466,8 +466,9 @@
             <div class="question-header">
                <h3 class="question-title" id="pertanyaan-title">Memuat pertanyaan...</h3>
             </div>
-            
+
             <div class="question-content">
+               <!-- Loading Indicator -->
                <div id="loading-indicator" class="alert alert-info">
                   <div style="display: flex; align-items: center; justify-content: center;">
                      <div class="loading"></div>
@@ -475,9 +476,10 @@
                   </div>
                </div>
 
+               <!-- Form Penilaian -->
                <form id="form-penilaian" style="display: none;">
                   <div id="pilihan-container"></div>
-                  
+
                   <div class="button-group">
                      <button type="submit" class="btn btn-primary">
                         Pertanyaan Selanjutnya
@@ -497,73 +499,70 @@
       </div>
    </footer>
 
+   <!-- Script -->
    <script>
       let kriteriaList = [];
       let currentIndex = 0;
       const nilaiUser = [];
 
-      // Update progress bar
       function updateProgress() {
          const progressBar = document.getElementById('progress-bar');
          const progressText = document.getElementById('progress-text');
          const progress = (currentIndex / kriteriaList.length) * 100;
-         
+
          progressBar.style.width = progress + '%';
          progressText.textContent = `${currentIndex} dari ${kriteriaList.length}`;
       }
 
       async function mulai() {
          try {
-            const res = await fetch("http://localhost:5000/api/copras/pilihan");
-            
+            const res = await fetch("http://localhost:5000/api/copras/pilihan")
+;
+
             if (!res.ok) {
                throw new Error(`HTTP error! status: ${res.status}`);
             }
-            
+
             kriteriaList = await res.json();
-            
-            if (!kriteriaList || kriteriaList.length === 0) {
-               throw new Error('Tidak ada data kriteria yang tersedia');
+
+            if (!Array.isArray(kriteriaList) || kriteriaList.length === 0) {
+               throw new Error("Data kriteria kosong atau tidak valid");
             }
-            
-            // Hide loading and show form
+
             document.getElementById('loading-indicator').style.display = 'none';
             document.getElementById('form-penilaian').style.display = 'block';
-            
+
             updateProgress();
             tampilkanPertanyaan();
-            
+
          } catch (err) {
-            console.error('Error loading criteria:', err);
+            console.error("Gagal memuat data kriteria:", err);
             document.getElementById('loading-indicator').innerHTML = `
                <div class="alert alert-danger">
                   ❌ Gagal memuat kriteria: ${err.message}
-                  <br><small>Pastikan server backend berjalan di http://localhost:5000</small>
+                  <br><small>Pastikan server berjalan di <code>http://localhost:5000</code></small>
                </div>
             `;
          }
       }
 
       function tampilkanPertanyaan() {
+         const container = document.getElementById("pilihan-container");
+         const title = document.getElementById("pertanyaan-title");
+
          if (currentIndex >= kriteriaList.length) {
-            // Semua pertanyaan sudah dijawab
             localStorage.setItem("nilai_user", JSON.stringify(nilaiUser));
             window.location.href = "hasil.html";
             return;
          }
 
          const current = kriteriaList[currentIndex];
-         document.getElementById("pertanyaan-title").textContent = current.nama_kriteria;
+         title.textContent = current.nama_kriteria || "Pertanyaan";
 
-         const pilihanContainer = document.getElementById("pilihan-container");
-         pilihanContainer.innerHTML = "";
+         container.innerHTML = "";
 
-         if (!current.pilihan || current.pilihan.length === 0) {
-            pilihanContainer.innerHTML = `
-               <div class="alert alert-danger">
-                  Tidak ada pilihan tersedia untuk kriteria ini.
-               </div>
-            `;
+         if (!Array.isArray(current.pilihan) || current.pilihan.length === 0) {
+            container.innerHTML = `<div class="alert alert-danger">Tidak ada pilihan untuk kriteria ini.</div>`;
             return;
          }
 
@@ -577,10 +576,9 @@
                   <strong>${p.skor}</strong> - ${p.deskripsi}
                </label>
             `;
-            pilihanContainer.appendChild(div);
+            container.appendChild(div);
          });
 
-         // Update progress
          updateProgress();
       }
 
@@ -589,17 +587,15 @@
 
          const selected = document.querySelector('input[name="skor"]:checked');
          if (!selected) {
-            alert("❌ Silakan pilih salah satu opsi sebelum melanjutkan.");
+            alert("❌ Silakan pilih salah satu opsi terlebih dahulu.");
             return;
          }
 
-         // Add loading effect to button
-         const button = document.querySelector('.btn-primary');
+         const button = document.querySelector(".btn-primary");
          const originalText = button.innerHTML;
          button.innerHTML = '<span class="loading"></span>Memproses...';
          button.disabled = true;
 
-         // Simulate processing delay for better UX
          setTimeout(() => {
             nilaiUser.push(parseInt(selected.value));
             currentIndex++;
@@ -609,33 +605,28 @@
                button.disabled = false;
                tampilkanPertanyaan();
             } else {
-               // Semua pertanyaan selesai
                localStorage.setItem("nilai_user", JSON.stringify(nilaiUser));
                window.location.href = "hasil.html";
             }
-         }, 800);
+         }, 500);
       });
 
-      // Function for back to home button
       function goBackHome() {
-         if (confirm('🤔 Apakah Anda yakin ingin kembali ke halaman utama? Progress penilaian akan hilang.')) {
-            window.location.href = 'home.html';
+         if (confirm("🤔 Yakin ingin kembali ke beranda? Semua penilaian akan hilang.")) {
+            window.location.href = "home.html";
          }
       }
 
-      // Add scroll effect to header
-      window.addEventListener('scroll', function() {
+      window.addEventListener('scroll', function () {
          const header = document.querySelector('header');
-         if (window.scrollY > 50) {
-            header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.1)';
-         } else {
-            header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
-         }
+         header.style.boxShadow = window.scrollY > 50
+            ? '0 2px 20px rgba(0,0,0,0.1)'
+            : '0 2px 10px rgba(0,0,0,0.05)';
       });
 
-      // Initialize page
       mulai();
    </script>
 </body>
+
 
 </html>

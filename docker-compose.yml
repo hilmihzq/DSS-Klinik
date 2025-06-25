@@ -1,29 +1,49 @@
-services:
-  node:
-    build:
-      context: .
-      dockerfile: Dockerfile.node
-    container_name: node-backend
-    ports:
-      - "3000:3000"
-    environment:
-      DB_HOST: 192.168.100.159       # ✅ IP address dari Windows host kamu
-      DB_USER: root
-      DB_PASSWORD: ""
-      DB_NAME: spk_klinik
-    depends_on:
-      - flask
+version: "3.8"
 
-  flask:
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: hilmi123
+      MYSQL_DATABASE: keamanan_db
+      # HAPUS baris MYSQL_USER dan MYSQL_PASSWORD
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  flask-api:
     build:
       context: ./flask-api
       dockerfile: Dockerfile.flask
     container_name: flask-api
     ports:
       - "5000:5000"
+    depends_on:
+      - mysql
     environment:
-      DB_HOST: 192.168.100.159       # ✅ Ganti ini juga
+      DB_HOST: mysql
       DB_USER: root
-      DB_PASSWORD: ""
-      DB_NAME: spk_klinik
+      DB_PASSWORD: hilmi123
+      DB_NAME: keamanan_db
+
+  node-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: hilmi123
+      DB_NAME: keamanan_db
+
+volumes:
+  mysql_data:
 

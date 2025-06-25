@@ -1,11 +1,11 @@
-// db.js atau di dalam app.js
+// db.js
 const mysql = require('mysql2');
 
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'hilmi123',
-  database: 'keamanan_db'
+  host: process.env.DB_HOST || 'mysql',         // ✅ Ganti localhost ke 'mysql'
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'hilmi123',
+  database: process.env.DB_NAME || 'keamanan_db'
 });
 
 db.connect((err) => {

@@ -1,19 +1,12 @@
 #!/bin/sh
 
-MAX_RETRIES=20
-COUNT=0
+echo "⏳ Menunggu database MySQL siap..."
 
-until echo "$DB_PASSWORD" | mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" --silent -e "SELECT 1;" > /dev/null 2>&1
-do
-  COUNT=$((COUNT+1))
-  echo "⏳ Menunggu database MySQL siap... ($COUNT)"
-  if [ $COUNT -ge $MAX_RETRIES ]; then
-    echo "❌ Gagal konek ke MySQL setelah $MAX_RETRIES percobaan. Cek koneksi!"
-    exit 1
-  fi
-  sleep 3
+until mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" -e "SHOW DATABASES;" > /dev/null 2>&1; do
+  echo "⏳ Menunggu database MySQL siap... ($(date))"
+  sleep 2
 done
 
-echo "✅ MySQL siap, menjalankan aplikasi Flask..."
+echo "✅ Database MySQL siap, menjalankan aplikasi..."
 exec "$@"
 

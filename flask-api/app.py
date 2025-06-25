@@ -12,10 +12,10 @@ app = Flask(__name__)
 CORS(app)
 
 db = mysql.connector.connect(
-    host=os.getenv("DB_HOST", "localhost"),  # gunakan localhost di Ubuntu
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASSWORD", "hilmi123"),
-    database=os.getenv("DB_NAME", "keamanan_db")
+    host=os.environ.get('DB_HOST', 'mysql'),
+    user=os.environ.get('DB_USER', 'root'),
+    password=os.environ.get('DB_PASSWORD', 'hilmi123'),
+    database=os.environ.get('DB_NAME', 'keamanan_db')
 )
 
 
@@ -249,5 +249,6 @@ def test_connection():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
 
